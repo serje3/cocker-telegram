@@ -8,6 +8,9 @@ from aiogram.types import Message, PhotoSize, File
 
 food_router = Router(name=__name__)
 
+with open('../data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
+    nazhor_adjectives = f.read().split(', ')
+
 
 @food_router.message(F.photo.len() != 0)
 async def photo_handler(message: Message) -> None:
@@ -28,7 +31,7 @@ async def photo_handler(message: Message) -> None:
             mentions.append(f"[{user.full_name}](tg://user?id={user.id})")
 
         await message.reply(
-            f"{random.choice(['ОЦЕНИВАЕМ', 'ЕБАНУТЫЙ', 'КИШЕЧНЫЙ', 'НЕВЪЕБЕННЫЙ'])} НАЖООООООР {' '.join(mentions if 'True' == os.getenv('ENABLE_MENTIONS', False) else [])}",
+            f"{random.choice(nazhor_adjectives)} НАЖООООООР {' '.join(mentions if 'True' == os.getenv('ENABLE_MENTIONS', False) else [])}",
             parse_mode=ParseMode.MARKDOWN_V2)
 
 
