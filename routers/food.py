@@ -23,6 +23,8 @@ async def photo_handler(message: Message) -> None:
 
         for admin in admins:
             user = admin.user
+            if user.is_bot:
+                continue
             mentions.append(f"[{user.full_name}](tg://user?id={user.id})")
 
         await message.answer(
