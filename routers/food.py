@@ -28,7 +28,7 @@ async def photo_handler(message: Message) -> None:
             mentions.append(f"[{user.full_name}](tg://user?id={user.id})")
 
         await message.reply(
-            f"{random.choice(['ОЦЕНИВАЕМ', 'ЕБАНУТЫЙ', 'КИШЕЧНЫЙ', 'НЕВЪЕБЕННЫЙ'])} НАЖООООООР {' '.join(mentions if os.getenv('ENABLE_MENTIONS', False) else [])}",
+            f"{random.choice(['ОЦЕНИВАЕМ', 'ЕБАНУТЫЙ', 'КИШЕЧНЫЙ', 'НЕВЪЕБЕННЫЙ'])} НАЖООООООР {' '.join(mentions if bool(os.getenv('ENABLE_MENTIONS', False)) else [])}",
             parse_mode=ParseMode.MARKDOWN_V2)
 
 
