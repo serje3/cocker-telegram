@@ -8,7 +8,7 @@ from aiogram.types import Message, PhotoSize, File
 
 food_router = Router(name=__name__)
 
-with open('../data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
+with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
     nazhor_adjectives = f.read().split(', ')
 
 
