@@ -15,7 +15,7 @@ with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
 base_food_api_url = os.getenv("FOOD_AI_API")
 
 
-@food_router.message(F.photo.len() != 0, F.chat.id in [-1002070268098])
+@food_router.message(F.photo.len() != 0, F.chat.id.in_((-1002070268098, )))
 async def photo_handler(message: Message) -> None:
     print(message.chat)
     photo: PhotoSize = message.photo[-1]
