@@ -6,27 +6,21 @@ import aiohttp
 from aiogram import Router, F, Bot
 from aiogram.types import Message, PhotoSize, File, ReactionTypeEmoji, MessageReactionUpdated
 
+from config import reload_reaction, base_food_api_url, nazhor_adjectives, ALLOWED_CHATS
 from db.models import Message as MessageMongo
 from db.hooks import insert_message, retrieve_message, set_message_analyzed, is_message_analyzed, \
     set_message_not_analyzed
 
 food_router = Router(name=__name__)
 
-with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
-    nazhor_adjectives = f.read().split(', ')
 
-base_food_api_url = os.getenv("FOOD_AI_API")
-
-filter_by_chat_id = F.chat.id.in_((-1002070268098, -1002222522139))
+filter_by_chat_id = F.chat.id.in_(ALLOWED_CHATS)
 filter_by_trigger_emoji_reaction = F.new_reaction.func(
-    lambda new_reaction: bool(len(list(filter(lambda reaction: reaction.emoji == reaction_emoji, new_reaction)))))
-
-reaction_emoji = "🍌"
-stop_emoji = "❤"
+    lambda new_reaction: bool(len(list(filter(lambda reaction: reaction.emoji == reload_reaction, new_reaction)))))
 
 
 @food_router.message_reaction(filter_by_chat_id, filter_by_trigger_emoji_reaction)
-async def food_reaction(updated: MessageReactionUpdated):
+async def reload_food_analyze_by_reaction(updated: MessageReactionUpdated):
     if await is_message_analyzed(updated.chat.id, updated.message_id):
         return
 

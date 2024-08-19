@@ -4,6 +4,8 @@ import sys
 
 from dotenv import load_dotenv
 
+from config import reload_reaction
+
 load_dotenv()
 
 from os import getenv
@@ -36,7 +38,14 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message(Command("help"))
 async def help_command(message: Message) -> None:
-    await message.answer(f"@devilcattik")
+    await message.answer(f"""Это бот, который анализирует ваш нажор. 
+    Всё что нужно это скинуть ему фотографию предполагаемого нажора.
+    Бот был разработан именно для бесед, а не для лс, поэтому он будет определять сначала нажор это или нет. Если нет - ответа не будет
+    Чтобы запустить вручную анализ нажора нужно на сообщение с предполагаемым фото нажора повесить реакцию {reload_reaction}
+    Разработчик @serJAYY. Бот сейчас тестируется и пока не готов к работе с большим количеством пользователей.
+    Что точно известно - если он и будет доступен, то с платной подпиской, т.к. каждый запрос тратит деньги
+    Инженер тех-поддержки @devilcattik""")
+
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
