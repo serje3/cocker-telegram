@@ -1,12 +1,9 @@
+from dotenv import load_dotenv
+
+load_dotenv()
 import asyncio
 import logging
 import sys
-
-from dotenv import load_dotenv
-
-from config import reload_reaction
-
-load_dotenv()
 
 from os import getenv
 from aiogram import Bot, Dispatcher
@@ -16,6 +13,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
 from routers.food import food_router
+from config import reload_reaction
 
 TOKEN = getenv("BOT_TOKEN")
 dp = Dispatcher()
