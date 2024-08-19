@@ -10,7 +10,7 @@ from os import getenv
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
 from routers.food import food_router
@@ -33,6 +33,10 @@ async def command_start_handler(message: Message) -> None:
     print(message.chat)
     await message.answer(f"Я тут я тут мужичок")
 
+
+@dp.message(Command("help"))
+async def help_command(message: Message) -> None:
+    await message.answer(f"@devilcattik")
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls

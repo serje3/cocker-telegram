@@ -3,9 +3,12 @@ import random
 from typing import Tuple
 
 import aiohttp
-from aiogram import Router, F
-from aiogram.enums import ParseMode
-from aiogram.types import Message, PhotoSize, File, ReactionTypeEmoji
+from aiogram import Router, F, Bot
+from aiogram.types import Message, PhotoSize, File, ReactionTypeEmoji, MessageReactionUpdated
+
+from db.models import Message as MessageMongo
+from db.hooks import insert_message, retrieve_message, set_message_analyzed, is_message_analyzed, \
+    set_message_not_analyzed
 
 food_router = Router(name=__name__)
 
@@ -14,33 +17,61 @@ with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
 
 base_food_api_url = os.getenv("FOOD_AI_API")
 
+filter_by_chat_id = F.chat.id.in_((-1002070268098, -1002222522139))
+filter_by_trigger_emoji_reaction = F.new_reaction.func(
+    lambda new_reaction: bool(len(list(filter(lambda reaction: reaction.emoji == reaction_emoji, new_reaction)))))
 
-@food_router.message(F.photo.len() != 0, F.chat.id.in_((-1002070268098, -1002222522139)))
+reaction_emoji = "🍌"
+stop_emoji = "❤"
+
+
+@food_router.message_reaction(filter_by_chat_id, filter_by_trigger_emoji_reaction)
+async def food_reaction(updated: MessageReactionUpdated):
+    if await is_message_analyzed(updated.chat.id, updated.message_id):
+        return
+
+    message: MessageMongo = await retrieve_message(updated.chat.id, updated.message_id)
+
+    if message is None:
+        print("WTF?? message does not exist")
+        return
+    photo = message['photo'][-1] if len(message['photo']) != 0 else None
+
+    if photo is None:
+        print("message without photo")
+        return
+
+    await handle_food_analyze(updated.bot, updated.chat.id, updated.message_id, photo['file_id'],
+                              skip_food_checking=True)
+
+
+@food_router.message(F.photo.len() != 0, filter_by_chat_id)
 async def photo_handler(message: Message) -> None:
+    await insert_message(message)
     print(message.chat)
     photo: PhotoSize = message.photo[-1]
-    file: File = await message.bot.get_file(photo.file_id)
+    await handle_food_analyze(message.bot, message.chat.id, message.message_id, photo.file_id)
+
+
+async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: str, skip_food_checking=False) -> None:
+    file: File = await bot.get_file(file_id)
     print(file)
-    is_food = await predict_is_food(file)
 
-    if is_food:
-        await message.react([ReactionTypeEmoji(emoji="🤔")])
-        admins = await message.bot.get_chat_administrators(message.chat.id)
-        mentions = []
+    if skip_food_checking or await predict_is_food(file):
+        if not (await set_message_analyzed(chat_id, message_id)):
+            return
+        await bot.set_message_reaction(chat_id, message_id, [ReactionTypeEmoji(emoji="🤔")])
 
-        for admin in admins:
-            user = admin.user
-            if user.is_bot:
-                continue
-            mentions.append(f"[{user.full_name}](tg://user?id={user.id})")
-        resp, status = await analyze_food(file.file_path, message.chat.id)
+        resp, status = await analyze_food(file.file_path, chat_id)
         if status == 200:
-            await message.reply(resp['content'])
+            await bot.send_message(chat_id, resp['content'], reply_to_message_id=message_id)
         else:
-            await message.reply(
-                f"{random.choice(nazhor_adjectives)} НАЖООООООР {' '.join(mentions if 'True' == os.getenv('ENABLE_MENTIONS', False) else [])}",
-                parse_mode=ParseMode.MARKDOWN_V2)
-        await message.react([])
+            await bot.send_message(chat_id, f"{random.choice(nazhor_adjectives)} НАЖООООООР",
+                                   reply_to_message_id=message_id)
+            await set_message_not_analyzed(chat_id, message_id)
+        await bot.set_message_reaction(chat_id, message_id, [])
+    else:
+        print('no food')
 
 
 async def analyze_food(file_path: str, chat_id: int) -> Tuple[dict, int] | Tuple[str, int]:
