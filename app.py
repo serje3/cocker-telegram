@@ -81,6 +81,7 @@ async def top_donates(message: Message) -> None:
     await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:
     1. Gamatasu - 300 ₽
     2. ЖОРА - 250 ₽
+    3. ROTATOR - 180 ₽
     """)
 
 
