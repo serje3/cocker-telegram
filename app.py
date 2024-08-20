@@ -43,6 +43,7 @@ async def chat_give_access(callback: CallbackQuery):
     await callback.answer(f"Доступ выдан {chat_id_to_give}")
     ALLOWED_CHATS.clear()
     ALLOWED_CHATS.update(await get_allowed_chats())
+    await callback.bot.send_message(chat_id_to_give, "Вам дали потыкать меня")
 
 
 @dp.message(CommandStart())

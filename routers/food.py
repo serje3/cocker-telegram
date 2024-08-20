@@ -4,6 +4,7 @@ from typing import Tuple
 
 import aiohttp
 from aiogram import Router, F, Bot
+from aiogram.enums import ChatType
 from aiogram.types import Message, PhotoSize, File, ReactionTypeEmoji, MessageReactionUpdated
 
 from config import reload_reaction, base_food_api_url, nazhor_adjectives, ALLOWED_CHATS
@@ -12,7 +13,6 @@ from db.hooks import insert_message, retrieve_message, set_message_analyzed, is_
     set_message_not_analyzed
 
 food_router = Router(name=__name__)
-
 
 filter_by_chat_id = F.chat.id.in_(ALLOWED_CHATS)
 filter_by_trigger_emoji_reaction = F.new_reaction.func(
@@ -66,6 +66,10 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
         await bot.set_message_reaction(chat_id, message_id, [])
     else:
         print('no food')
+        chat = await bot.get_chat(chat_id)
+        if chat.type == ChatType.PRIVATE:
+            await bot.send_message(chat_id,
+                                   f"Это не похоже на нажор. Если я не прав киньте на картиночку реакцию {reload_reaction}")
 
 
 async def analyze_food(file_path: str, chat_id: int) -> Tuple[dict, int] | Tuple[str, int]:
