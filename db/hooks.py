@@ -1,5 +1,5 @@
 import os
-from typing import Set
+from typing import Set, List
 
 from aiogram.types import Message
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -55,11 +55,11 @@ async def is_message_analyzed(chat_id: int, message_id: int) -> MessageMongoMode
     return document is not None
 
 
-async def get_allowed_chats() -> Set[int]:
+async def get_allowed_chats() -> List[int]:
     cursor = allowed_chats.find()
     documents = await cursor.to_list(None)
     print(documents)
-    chats = {int(doc['chat_id']) for doc in documents}
+    chats = [int(doc['chat_id']) for doc in documents]
     return chats
 
 
