@@ -73,6 +73,11 @@ async def help_command(message: Message) -> None:
     Инженер тех-поддержки @devilcattik""")
 
 
+@dp.message(Command("reload_allowed"), F.chat.id == LOG_CHAT)
+async def reload_allowed(message: Message) -> None:
+    ALLOWED_CHATS.clear()
+    ALLOWED_CHATS.update(await get_allowed_chats())
+
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     docs = await get_allowed_chats()
