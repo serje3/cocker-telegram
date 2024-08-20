@@ -76,6 +76,18 @@ async def help_command(message: Message) -> None:
     Инженер тех-поддержки @devilcattik""")
 
 
+@dp.message(Command("top_donates"))
+async def top_donates(message: Message) -> None:
+    await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:
+    1. ЖОРА - 250 ₽""")
+
+
+@dp.message(Command("donate"))
+async def donate(message: Message) -> None:
+    await message.answer("Все деньги пойдут на поддержку бота потому шо он содержанка (каждый запрос стоит деняк)")
+    await message.answer("https://pay.cloudtips.ru/p/47dd3faa")
+
+
 @dp.message(Command("reload_allowed"), F.chat.id == LOG_CHAT)
 async def reload_allowed(message: Message) -> None:
     ALLOWED_CHATS.clear()
