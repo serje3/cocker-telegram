@@ -55,6 +55,7 @@ async def command_start_handler(message: Message) -> None:
     print(message.chat)
     await message.answer(f"Я тут я тут мужичок")
     if message.chat.id not in ALLOWED_CHATS:
+        await request_access(message)
         is_private = message.chat.type == 'private'
         await message.answer(
             f"Я пока не доступен для тебя, но я уже оповестил своего dungeon master о {'тебе' if is_private else 'вас'} и {'твоих' if is_private else 'ваших'} странных намерениях")
@@ -74,7 +75,6 @@ async def help_command(message: Message) -> None:
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     docs = await get_allowed_chats()
-    print(docs)
     ALLOWED_CHATS.update(docs)
 
     print("Allowed chats is", ALLOWED_CHATS)
