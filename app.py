@@ -73,8 +73,9 @@ async def help_command(message: Message) -> None:
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
-
-    ALLOWED_CHATS.update(await get_allowed_chats())
+    docs = await get_allowed_chats()
+    print(docs)
+    ALLOWED_CHATS.update(docs)
 
     print("Allowed chats is", ALLOWED_CHATS)
 
