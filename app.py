@@ -40,6 +40,7 @@ async def request_access(message: Message):
 async def chat_give_access(callback: CallbackQuery):
     chat_id_to_give = int(callback.message.text.split("ID:")[-1])
     await insert_allowed_chat(chat_id_to_give)
+    await callback.answer(f"Доступ выдан {chat_id_to_give}")
 
 
 @dp.message(CommandStart())
