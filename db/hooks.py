@@ -1,5 +1,5 @@
 import os
-from typing import List, Set
+from typing import Set
 
 from aiogram.types import Message
 from motor.motor_asyncio import AsyncIOMotorClient

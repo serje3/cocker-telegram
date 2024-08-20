@@ -1,8 +1,6 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from dotenv import load_dotenv
 
-from db.hooks import get_allowed_chats, insert_allowed_chat
-
 load_dotenv()
 import asyncio
 import logging
@@ -17,6 +15,8 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, Callback
 
 from routers.food import food_router
 from config import reload_reaction, ALLOWED_CHATS, LOG_CHAT
+
+from db.hooks import get_allowed_chats, insert_allowed_chat, client
 
 TOKEN = getenv("BOT_TOKEN")
 dp = Dispatcher()
