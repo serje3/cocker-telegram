@@ -79,7 +79,9 @@ async def help_command(message: Message) -> None:
 @dp.message(Command("top_donates"))
 async def top_donates(message: Message) -> None:
     await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:
-    1. ЖОРА - 250 ₽""")
+    1. Gamatasu - 300 ₽
+    2. ЖОРА - 250 ₽
+    """)
 
 
 @dp.message(Command("donate"))
