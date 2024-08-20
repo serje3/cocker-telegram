@@ -41,6 +41,8 @@ async def chat_give_access(callback: CallbackQuery):
     chat_id_to_give = int(callback.message.text.split("ID:")[-1])
     await insert_allowed_chat(chat_id_to_give)
     await callback.answer(f"Доступ выдан {chat_id_to_give}")
+    ALLOWED_CHATS.clear()
+    ALLOWED_CHATS.update(await get_allowed_chats())
 
 
 @dp.message(CommandStart())
@@ -77,6 +79,7 @@ async def help_command(message: Message) -> None:
 async def reload_allowed(message: Message) -> None:
     ALLOWED_CHATS.clear()
     ALLOWED_CHATS.update(await get_allowed_chats())
+
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls
