@@ -58,6 +58,7 @@ async def is_message_analyzed(chat_id: int, message_id: int) -> MessageMongoMode
 async def get_allowed_chats() -> Set[int]:
     cursor = allowed_chats.find()
     documents = cursor.to_list(None)
+    print(documents)
     chats = {int(doc['chat_id']) for doc in documents}
     return chats
 
