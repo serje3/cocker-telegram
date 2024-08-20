@@ -6,6 +6,6 @@ with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
 base_food_api_url = os.getenv("FOOD_AI_API")
 
 reload_reaction = "🍌"
-ALLOWED_CHATS = {}
+ALLOWED_CHATS = set()
 
 LOG_CHAT = 426004046
