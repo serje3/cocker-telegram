@@ -14,11 +14,11 @@ set_instructions_command_name = "set_instruction"
 
 
 class InstructionFormData(TypedDict):
-    instructions: str
+    instruction: str
 
 
 class InstructionForm(StatesGroup):
-    instructions = State()
+    instruction = State()
 
 
 @instructions_router.message(Command("instruction"))
@@ -40,20 +40,20 @@ async def set_instructions_command(message: Message, state: FSMContext) -> None:
         if message.from_user.id not in [admin.user.id for admin in admins]:
             await message.answer("Это действие могут совершать только администраторы")
             return
-    await state.set_state(InstructionForm.instructions)
+    await state.set_state(InstructionForm.instruction)
     await message.answer(
         "В следующем сообщении пришли мне новые инструкции или отмени действие /cancel",
     )
 
 
-@instructions_router.message(InstructionForm.instructions, F.text.len() != 0)
+@instructions_router.message(InstructionForm.instruction, F.text.len() != 0)
 async def process_instructions(message: Message, state: FSMContext) -> None:
-    await state.update_data(instructions=message.text)
+    await state.update_data(instruction=message.text)
     data: InstructionFormData = await state.get_data()
     await state.clear()
     print(data)
     if 'instructions' in data:
-        await insert_instruction(message.chat.id, data['instructions'])
-        await message.reply("Сохранено: \n" + data['instructions'])
+        await insert_instruction(message.chat.id, data['instruction'])
+        await message.reply("Сохранено: \n" + data['instruction'])
     else:
         await message.reply("чета не получилась)))))")
