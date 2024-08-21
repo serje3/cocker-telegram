@@ -50,7 +50,7 @@ async def instruction_command(message: Message) -> None:
 
 @instructions_router.message(Command("instruction_enable"))
 async def instruction_enable(message: Message) -> None:
-    if not allowed_to_modify(message):
+    if not await allowed_to_modify(message):
         return
     instruction_doc: CustomInstruction | None = await find_instruction(message.chat.id)
     if instruction_doc is None:
@@ -63,7 +63,7 @@ async def instruction_enable(message: Message) -> None:
 
 @instructions_router.message(Command("instruction_disable"))
 async def instruction_disable(message: Message) -> None:
-    if not allowed_to_modify(message):
+    if not await allowed_to_modify(message):
         return
     instruction_doc: CustomInstruction | None = await find_instruction(message.chat.id)
     if instruction_doc is None:
@@ -80,7 +80,7 @@ async def set_instruction_command(message: Message, state: FSMContext) -> None:
     if current_state is not None:
         await state.clear()
 
-    if not allowed_to_modify(message):
+    if not await allowed_to_modify(message):
         return
 
     await state.set_state(InstructionForm.instruction)
