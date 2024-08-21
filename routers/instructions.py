@@ -10,7 +10,7 @@ from db.hooks.custom_instructions import find_instruction, insert_instruction
 
 instructions_router = Router(name=__name__)
 
-set_instructions_command_name = "set_instruction"
+set_instruction_command_name = "set_instruction"
 
 
 class InstructionFormData(TypedDict):
@@ -26,13 +26,13 @@ async def instruction_command(message: Message) -> None:
     instruction: str | None = await find_instruction(message.chat.id)
     if instruction is None:
         await message.reply(
-            f"У вас нет кастомной инструкции. Чтобы создать используйте команду /{set_instructions_command_name}")
+            f"У вас нет кастомной инструкции. Чтобы создать используйте команду /{set_instruction_command_name}")
     else:
         await message.reply("<b>Сейчас я работаю по этой инструкции</b>:\n" + instruction)
 
 
-@instructions_router.message(Command(set_instructions_command_name))
-async def set_instructions_command(message: Message, state: FSMContext) -> None:
+@instructions_router.message(Command(set_instruction_command_name))
+async def set_instruction_command(message: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
     if current_state is not None:
         await state.clear()
