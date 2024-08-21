@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.enums import ChatType
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -32,6 +33,13 @@ async def instruction_command(message: Message) -> None:
 
 @instructions_router.message(Command(set_instructions_command_name))
 async def set_instructions_command(message: Message, state: FSMContext) -> None:
+    if message.chat.type != ChatType.PRIVATE:
+        if message.from_user is None:
+            return
+        admins = await message.bot.get_chat_administrators(message.chat.id)
+        if message.from_user.id not in [admin.user.id for admin in admins]:
+            await message.answer("Это действие могут совершать только администраторы")
+            return
     await state.set_state(InstructionForm.instructions)
     await message.answer(
         "В следующем сообщении пришли мне новые инструкции или отмени действие /cancel",
