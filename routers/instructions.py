@@ -33,6 +33,10 @@ async def instruction_command(message: Message) -> None:
 
 @instructions_router.message(Command(set_instructions_command_name))
 async def set_instructions_command(message: Message, state: FSMContext) -> None:
+    current_state = await state.get_state()
+    if current_state is not None:
+        await state.clear()
+
     if message.chat.type != ChatType.PRIVATE:
         if message.from_user is None:
             return
