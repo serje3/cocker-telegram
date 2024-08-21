@@ -27,4 +27,4 @@ class Donate(TypedDict):
 class CustomInstruction(TypedDict, total=False):
     chat_id: Required[int]
     instruction: str
-    enabled: bool
+    enabled: Required[bool]

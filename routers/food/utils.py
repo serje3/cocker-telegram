@@ -49,8 +49,10 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
 
 async def analyze_food(file_path: str, chat_id: int) -> Tuple[dict, int] | Tuple[str, int]:
     opt_kwargs = {}
+
     if instruction_doc := await find_instruction(chat_id):
-        opt_kwargs['instructions'] = instruction_doc['instruction']
+        if instruction_doc['enabled']:
+            opt_kwargs['instructions'] = instruction_doc['instruction']
 
     if base_food_api_url is None:
         print("WARNING base_food_api_url is None")
