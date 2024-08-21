@@ -1,105 +1,24 @@
-from typing import List
-
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from dotenv import load_dotenv
-
-load_dotenv()
 import asyncio
 import logging
 import sys
-
 from os import getenv
-from aiogram import Bot, Dispatcher, types, F
+
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 
-from routers.food import food_router
-from config import reload_reaction, ALLOWED_CHATS, LOG_CHAT
+from config import ALLOWED_CHATS, TOKEN  # MUST BE CALLED. There envs is loaded
+from db.hooks import get_allowed_chats
+from routers.donate import donate_router
+from routers.food.router import food_router
+from routers.help import help_router
+from routers.start import start_router
 
-from db.hooks import get_allowed_chats, insert_allowed_chat, client, find_top_donates, Donate
-
-TOKEN = getenv("BOT_TOKEN")
 dp = Dispatcher()
+dp.include_router(start_router)
+dp.include_router(help_router)
+dp.include_router(donate_router)
 dp.include_router(food_router)
-
-
-async def request_access(message: Message):
-    is_private = message.chat.type == 'private'
-    text = f"""{message.chat.username if is_private else message.chat.title} запрашивает доступ к боту ID:{message.chat.id}"""
-
-    builder = InlineKeyboardBuilder()
-    builder.add(types.InlineKeyboardButton(
-        text="Дать доступ",
-        callback_data="chat_give_access")
-    )
-    await message.bot.send_message(LOG_CHAT, text,
-                                   reply_markup=builder.as_markup())
-
-
-@dp.callback_query(F.data == "chat_give_access")
-async def chat_give_access(callback: CallbackQuery):
-    chat_id_to_give = int(callback.message.text.split("ID:")[-1])
-    await insert_allowed_chat(chat_id_to_give)
-    await callback.answer(f"Доступ выдан {chat_id_to_give}")
-    ALLOWED_CHATS.clear()
-    ALLOWED_CHATS.update(await get_allowed_chats())
-    await callback.bot.send_message(chat_id_to_give, "Вам дали потыкать меня")
-
-
-@dp.message(CommandStart())
-async def command_start_handler(message: Message) -> None:
-    """
-    This handler receives messages with `/start` command
-    """
-    # Most event objects have aliases for API methods that can be called in events' context
-    # For example if you want to answer to incoming message you can use `message.answer(...)` alias
-    # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
-    # method automatically or call API method directly via
-    # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
-    print(message.chat)
-    await message.answer(f"Я тут я тут мужичок")
-    if message.chat.id not in ALLOWED_CHATS:
-        await request_access(message)
-        is_private = message.chat.type == 'private'
-        await message.answer(
-            f"Я пока не доступен для тебя, но я уже оповестил своего dungeon master о {'тебе' if is_private else 'вас'} и {'твоих' if is_private else 'ваших'} странных намерениях")
-
-
-@dp.message(Command("help"))
-async def help_command(message: Message) -> None:
-    await message.answer(f"""Это бот, который анализирует ваш нажор. 
-    Всё что нужно это скинуть ему фотографию предполагаемого нажора.
-    Бот был разработан именно для бесед, а не для лс, поэтому он будет определять сначала нажор это или нет. Если нет - ответа не будет
-    Чтобы запустить вручную анализ нажора нужно на сообщение с предполагаемым фото нажора повесить реакцию {reload_reaction}
-    Разработчик @serJAYY. Бот сейчас тестируется и пока не готов к работе с большим количеством пользователей.
-    Что точно известно - если он и будет доступен, то с платной подпиской, т.к. каждый запрос тратит деньги
-    Инженер тех-поддержки @devilcattik""")
-
-
-@dp.message(Command("top_donates"))
-async def top_donates(message: Message) -> None:
-    """Команда для ахуенных людей"""
-
-    donates: List[Donate] = await find_top_donates()
-
-    top = "\n" + "\n".join([f"{i + 1}. {donates[i]['name']} - {donates[i]['amount']}{donates[i]['currency']}" for i in
-                            range(len(donates))])
-
-    await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:{top}""")
-
-
-@dp.message(Command("donate"))
-async def donate(message: Message) -> None:
-    await message.answer("Все деньги пойдут на поддержку бота потому шо он содержанка (каждый запрос стоит деняк)")
-    await message.answer("https://pay.cloudtips.ru/p/47dd3faa")
-
-
-@dp.message(Command("reload_allowed"), F.chat.id == LOG_CHAT)
-async def reload_allowed(message: Message) -> None:
-    ALLOWED_CHATS.clear()
-    ALLOWED_CHATS.update(await get_allowed_chats())
 
 
 async def main() -> None:

@@ -1,11 +1,10 @@
 import os
-from typing import Set, List
+from typing import List
 
 from aiogram.types import Message
 from motor.motor_asyncio import AsyncIOMotorClient
-from typing_extensions import TypedDict
 
-from db.models import Message as MessageMongoModel
+from db.models import Message as MessageMongoModel, Donate
 
 client = AsyncIOMotorClient(os.getenv('MONGO_CONNECTION_URL'), authSource='telegram')
 db = client['telegram']
@@ -13,6 +12,7 @@ messages_collection = db['messages']
 analyzed_messages_collection = db['analyzed_messages']
 allowed_chats = db['allowed_chats']
 donates = db['donates']
+
 
 
 async def insert_message(message: Message) -> bool:
@@ -68,12 +68,6 @@ async def get_allowed_chats() -> List[int]:
 async def insert_allowed_chat(chat_id: int):
     if chat_id not in await get_allowed_chats():
         await allowed_chats.insert_one({'chat_id': chat_id})
-
-
-class Donate(TypedDict):
-    name: str
-    amount: int
-    currency: str
 
 
 async def find_top_donates(limit: int = 10) -> List[Donate]:

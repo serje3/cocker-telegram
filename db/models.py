@@ -16,3 +16,9 @@ class Message(TypedDict, total=False):
     chat_id: Required[int]
     message_text: str
     photo: Required[List[Photo]]
+
+
+class Donate(TypedDict):
+    name: str
+    amount: int
+    currency: str
