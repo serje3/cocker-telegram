@@ -48,6 +48,7 @@ async def set_instructions_command(message: Message, state: FSMContext) -> None:
 
 @instructions_router.message(InstructionForm.instructions, F.text.len() != 0)
 async def process_instructions(message: Message, state: FSMContext) -> None:
+    await state.update_data(instructions=message.text)
     data: InstructionFormData = await state.get_data()
     await state.clear()
     print(data)
