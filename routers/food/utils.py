@@ -7,6 +7,7 @@ import aiohttp
 from aiogram import F, Bot
 from aiogram.enums import ChatType
 from aiogram.types import File, ReactionTypeEmoji
+from aiogram.utils.chat_action import ChatActionSender
 
 from config import ALLOWED_CHATS, reload_reaction, nazhor_adjectives, base_food_api_url
 from db.hooks.analyzed_messages import set_message_analyzed, set_message_not_analyzed
@@ -28,7 +29,8 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
         await bot.set_message_reaction(chat_id, message_id, [ReactionTypeEmoji(emoji="🤔")])
 
         try:
-            resp, status = await analyze_food(file.file_path, chat_id)
+            async with ChatActionSender.typing(bot=bot, chat_id=chat_id):
+                resp, status = await analyze_food(file.file_path, chat_id)
         except asyncio.exceptions.TimeoutError as e:
             status = None
             print('TIMEOUT CALLED: ' + str(e))
