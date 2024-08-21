@@ -20,12 +20,12 @@ class InstructionForm(StatesGroup):
     instructions = State()
 
 
-@instructions_router.message(Command("instructions"))
+@instructions_router.message(Command("instruction"))
 async def instruction_command(message: Message) -> None:
     instruction: str | None = await find_instruction(message.chat.id)
     if instruction is None:
         await message.reply(
-            f"У вас нет кастомных инструкций. Чтобы создать используйте команду {set_instructions_command_name}")
+            f"У вас нет кастомной инструкции. Чтобы создать используйте команду /{set_instructions_command_name}")
     else:
         await message.reply("<b>Сейчас я работаю по этой инструкции</b>:\n" + instruction)
 
@@ -40,7 +40,8 @@ async def set_instructions_command(message: Message, state: FSMContext) -> None:
 
 @instructions_router.message(InstructionForm.instructions, F.text.len() != 0)
 async def process_instructions(message: Message, state: FSMContext) -> None:
-    data: InstructionFormData = await state.update_data(instructions=message.text)
+    await state.update_data(instructions=message.text)
+    data: InstructionFormData = await state.get_data()
     await state.clear()
 
     await insert_instruction(message.chat.id, data['instruction'])
