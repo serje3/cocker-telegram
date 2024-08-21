@@ -52,7 +52,7 @@ async def process_instructions(message: Message, state: FSMContext) -> None:
     data: InstructionFormData = await state.get_data()
     await state.clear()
     print(data)
-    if 'instructions' in data:
+    if 'instruction' in data:
         await insert_instruction(message.chat.id, data['instruction'])
         await message.reply("Сохранено: \n" + data['instruction'])
     else:
