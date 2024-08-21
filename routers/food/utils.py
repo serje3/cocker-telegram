@@ -10,6 +10,7 @@ from aiogram.types import File, ReactionTypeEmoji
 
 from config import ALLOWED_CHATS, reload_reaction, nazhor_adjectives, base_food_api_url
 from db.hooks.analyzed_messages import set_message_analyzed, set_message_not_analyzed
+from db.hooks.custom_instructions import find_instruction
 
 filter_only_allowed_chats = F.chat.id.in_(ALLOWED_CHATS)
 filter_by_trigger_emoji_reaction = F.new_reaction.func(
@@ -47,12 +48,17 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
 
 
 async def analyze_food(file_path: str, chat_id: int) -> Tuple[dict, int] | Tuple[str, int]:
+    opt_kwargs = {}
+    if instruction_doc := await find_instruction(chat_id):
+        opt_kwargs['instructions'] = instruction_doc['instruction']
+
     if base_food_api_url is None:
         print("WARNING base_food_api_url is None")
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{base_food_api_url}/analyze", json={
             "file_path": file_path,
             "chat_id": chat_id,
+            **opt_kwargs
         }) as resp:
             print(resp.status, resp)
             if resp.status == 200:
