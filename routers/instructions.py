@@ -14,7 +14,7 @@ set_instructions_command_name = "set_instructions"
 
 
 class InstructionFormData(TypedDict):
-    instruction: str
+    instructions: str
 
 
 class InstructionForm(StatesGroup):
@@ -50,5 +50,8 @@ async def set_instructions_command(message: Message, state: FSMContext) -> None:
 async def process_instructions(message: Message, state: FSMContext) -> None:
     data: InstructionFormData = await state.get_data()
     await state.clear()
-
-    await insert_instruction(message.chat.id, data['instruction'])
+    print(data)
+    if 'instructions' in data:
+        await insert_instruction(message.chat.id, data['instructions'])
+    else:
+        await message.reply("чета не получилась)))))")
