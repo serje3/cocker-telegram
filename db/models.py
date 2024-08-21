@@ -22,3 +22,8 @@ class Donate(TypedDict):
     name: str
     amount: int
     currency: str
+
+
+class CustomInstruction(TypedDict, total=False):
+    chat_id: Required[int]
+    instruction: str

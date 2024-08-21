@@ -9,7 +9,7 @@ from aiogram.enums import ChatType
 from aiogram.types import File, ReactionTypeEmoji
 
 from config import ALLOWED_CHATS, reload_reaction, nazhor_adjectives, base_food_api_url
-from db.hooks import set_message_analyzed, set_message_not_analyzed
+from db.hooks.analyzed_messages import set_message_analyzed, set_message_not_analyzed
 
 filter_only_allowed_chats = F.chat.id.in_(ALLOWED_CHATS)
 filter_by_trigger_emoji_reaction = F.new_reaction.func(

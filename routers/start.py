@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from config import ALLOWED_CHATS, LOG_CHAT
-from db.hooks import insert_allowed_chat, get_allowed_chats
+from db.hooks.allowed_chats import get_allowed_chats, insert_allowed_chat
 
 start_router = Router(name=__name__)
 

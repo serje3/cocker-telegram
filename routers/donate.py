@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from db.hooks import find_top_donates
+from db.hooks.donates import find_top_donates
 from db.models import Donate
 
 donate_router = Router(name=__name__)

@@ -6,19 +6,40 @@ from os import getenv
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 
-from config import ALLOWED_CHATS, TOKEN  # MUST BE CALLED. There envs is loaded
-from db.hooks import get_allowed_chats
+from config import ALLOWED_CHATS, TOKEN  # MUST BE CALLED FIRST. There envs is loaded
+from db.hooks.allowed_chats import get_allowed_chats
 from routers.donate import donate_router
 from routers.food.router import food_router
 from routers.help import help_router
+from routers.instructions import instructions_router
 from routers.start import start_router
 
 dp = Dispatcher()
-dp.include_router(start_router)
-dp.include_router(help_router)
-dp.include_router(donate_router)
-dp.include_router(food_router)
+dp.include_routers(start_router,
+                   help_router,
+                   donate_router,
+                   food_router,
+                   instructions_router)
+
+
+@dp.message(Command("cancel"))
+async def cancel_command(message: Message, state: FSMContext) -> None:
+    """
+        Allow user to cancel any action
+        """
+    current_state = await state.get_state()
+    if current_state is None:
+        return
+
+    print(f"Cancelling state {current_state}")
+    await state.clear()
+    await message.answer(
+        "Отменено",
+    )
 
 
 async def main() -> None:
