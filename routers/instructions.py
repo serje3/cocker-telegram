@@ -10,7 +10,7 @@ from db.hooks.custom_instructions import find_instruction, insert_instruction
 
 instructions_router = Router(name=__name__)
 
-set_instructions_command_name = "set_instructions"
+set_instructions_command_name = "set_instruction"
 
 
 class InstructionFormData(TypedDict):
@@ -54,5 +54,6 @@ async def process_instructions(message: Message, state: FSMContext) -> None:
     print(data)
     if 'instructions' in data:
         await insert_instruction(message.chat.id, data['instructions'])
+        await message.reply("Сохранено: \n" + data['instructions'])
     else:
         await message.reply("чета не получилась)))))")
