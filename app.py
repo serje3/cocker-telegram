@@ -1,3 +1,5 @@
+from typing import List
+
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from dotenv import load_dotenv
 
@@ -16,7 +18,7 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, Callback
 from routers.food import food_router
 from config import reload_reaction, ALLOWED_CHATS, LOG_CHAT
 
-from db.hooks import get_allowed_chats, insert_allowed_chat, client
+from db.hooks import get_allowed_chats, insert_allowed_chat, client, find_top_donates, Donate
 
 TOKEN = getenv("BOT_TOKEN")
 dp = Dispatcher()
@@ -78,11 +80,14 @@ async def help_command(message: Message) -> None:
 
 @dp.message(Command("top_donates"))
 async def top_donates(message: Message) -> None:
-    await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:
-    1. Gamatasu - 300 ₽
-    2. ЖОРА - 250 ₽
-    3. ROTATOR - 180 ₽
-    """)
+    """Команда для ахуенных людей"""
+
+    donates: List[Donate] = await find_top_donates()
+
+    top = "\n" + "\n".join([f"{i + 1}. {donates[i]['name']} - {donates[i]['amount']}{donates[i]['currency']}" for i in
+                            range(len(donates))])
+
+    await message.answer(f"""Топ донатчики вообще самые пиздатые ахуенные люди:{top}""")
 
 
 @dp.message(Command("donate"))
