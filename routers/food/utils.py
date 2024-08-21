@@ -1,3 +1,4 @@
+import asyncio.exceptions
 import os
 import random
 from typing import Tuple
@@ -25,7 +26,11 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
             return
         await bot.set_message_reaction(chat_id, message_id, [ReactionTypeEmoji(emoji="🤔")])
 
-        resp, status = await analyze_food(file.file_path, chat_id)
+        try:
+            resp, status = await analyze_food(file.file_path, chat_id)
+        except asyncio.exceptions.TimeoutError as e:
+            status = None
+            print('TIMEOUT CALLED: ' + str(e))
         if status == 200:
             await bot.send_message(chat_id, resp['content'], reply_to_message_id=message_id)
         else:
@@ -42,6 +47,8 @@ async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: 
 
 
 async def analyze_food(file_path: str, chat_id: int) -> Tuple[dict, int] | Tuple[str, int]:
+    if base_food_api_url is None:
+        print("WARNING base_food_api_url is None")
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{base_food_api_url}/analyze", json={
             "file_path": file_path,
@@ -67,4 +74,3 @@ async def predict_is_food(photo_file: File) -> bool:
                 async with food_api_session.post(f'{base_food_api_url}/is-food', data=form) as response:
                     result = await response.json()
                     return result['is_food']
-
