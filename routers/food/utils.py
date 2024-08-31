@@ -9,14 +9,12 @@ from aiogram.enums import ChatType
 from aiogram.types import File, ReactionTypeEmoji
 from aiogram.utils.chat_action import ChatActionSender
 
-from config import ALLOWED_CHATS, reload_reaction, nazhor_adjectives, base_food_api_url
+from config import reload_reaction, nazhor_adjectives, base_food_api_url
 from db.hooks.analyzed_messages import set_message_analyzed, set_message_not_analyzed
 from db.hooks.custom_instructions import find_instruction
+from utils import filter_by_trigger_emoji
 
-filter_only_allowed_chats = F.chat.id.in_(ALLOWED_CHATS)
-filter_by_trigger_emoji_reaction = F.new_reaction.func(
-    lambda new_reaction: bool(len(list(filter(lambda reaction: reaction.emoji == reload_reaction, new_reaction)))))
-filter_only_with_photos = F.photo.len() != 0
+filter_by_trigger_emoji_reaction = filter_by_trigger_emoji(reload_reaction)
 
 
 async def handle_food_analyze(bot: Bot, chat_id: int, message_id: int, file_id: str, skip_food_checking=False) -> None:

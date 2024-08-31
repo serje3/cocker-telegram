@@ -10,20 +10,31 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import ALLOWED_CHATS, TOKEN  # MUST BE CALLED FIRST. There envs is loaded
+from config import ALLOWED_CHATS, TOKEN, fart_directory  # MUST BE CALLED FIRST. There envs is loaded
 from db.hooks.allowed_chats import get_allowed_chats
+from db.hooks.message import insert_message
 from routers.donate import donate_router
-from routers.food.router import food_router
+from routers.fart_encoding import fart_router
+from routers.food.router import food_router, photo_handler as food_photo_handler
 from routers.help import help_router
 from routers.instructions import instructions_router
 from routers.start import start_router
+from utils import filter_only_allowed_chats
 
 dp = Dispatcher()
 dp.include_routers(start_router,
                    help_router,
                    donate_router,
                    food_router,
-                   instructions_router)
+                   instructions_router,
+                   fart_router)
+
+
+@dp.message(filter_only_allowed_chats)
+async def on_message(message: Message):
+    await insert_message(message)
+    if message.photo is not None and len(message.photo) != 0:
+        await food_photo_handler(message)
 
 
 @dp.message(Command("cancel"))
@@ -48,7 +59,7 @@ async def main() -> None:
     ALLOWED_CHATS.update(docs)
 
     print("Allowed chats is", ALLOWED_CHATS)
-
+    print('fart_directory', fart_directory)
     bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await bot.delete_webhook()
 

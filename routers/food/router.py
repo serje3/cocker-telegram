@@ -4,8 +4,8 @@ from aiogram.types import Message, PhotoSize, MessageReactionUpdated
 from db.hooks.analyzed_messages import is_message_analyzed
 from db.hooks.message import retrieve_message, insert_message
 from db.models import Message as MessageMongo
-from routers.food.utils import filter_only_allowed_chats, filter_by_trigger_emoji_reaction, handle_food_analyze, \
-    filter_only_with_photos
+from routers.food.utils import filter_by_trigger_emoji_reaction, handle_food_analyze
+from utils import filter_only_allowed_chats, filter_only_with_photos
 
 food_router = Router(name=__name__)
 
@@ -30,9 +30,8 @@ async def reload_food_analyze_by_reaction(updated: MessageReactionUpdated):
                               skip_food_checking=True)
 
 
-@food_router.message(filter_only_allowed_chats, filter_only_with_photos)
+# @food_router.message(filter_only_allowed_chats, filter_only_with_photos) # deprecated. Now calls in main on message
 async def photo_handler(message: Message) -> None:
-    await insert_message(message)
     photo: PhotoSize = message.photo[-1]
     print(f"Photo sended from: {message.from_user.username}")
     await handle_food_analyze(message.bot, message.chat.id, message.message_id, photo.file_id)

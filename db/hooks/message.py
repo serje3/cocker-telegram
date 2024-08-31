@@ -12,8 +12,9 @@ async def insert_message(message: Message) -> bool:
     document = {
         'message_id': message.message_id,
         'chat_id': message.chat.id,
-        'message_text': message.text,
-        'photo': [photo.model_dump() for photo in message.photo]
+        'message_text': message.text or message.caption,
+        'photo': [photo.model_dump() for photo in message.photo] if message.photo is not None and len(
+            message.photo) != 0 else None
     }
     result = await messages_collection.insert_one(document)
     return result.acknowledged
