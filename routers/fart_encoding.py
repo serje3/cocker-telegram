@@ -82,7 +82,7 @@ def alphabet_values(input_str) -> List[int]:
 
 
 async def fart_encoding(text: str, chat_id: int, bot: aiogram.Bot, reply_to_message_id: int = None):
-    encoded_text_nums = alphabet_values(text[:1000])
+    encoded_text_nums = alphabet_values(text[:300]) # temporary
     result_audio_segment: AudioSegment | None = None
     for num in encoded_text_nums:
         if not result_audio_segment:
