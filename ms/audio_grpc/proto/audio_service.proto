@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package audiogen;
+
+service AudioService {
+  rpc GenerateFartAudio (TextInputRequest) returns (stream AudioResponse);
+}
+
+message TextInputRequest {
+  string text = 1;
+}
+
+message AudioResponse {
+  bytes audio_chunk = 1;
+}

@@ -3,14 +3,12 @@ import logging
 import sys
 from os import getenv
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import ALLOWED_CHATS, TOKEN, fart_directory  # MUST BE CALLED FIRST. There envs is loaded
+from config import ALLOWED_CHATS, nazhor_adjectives  # MUST BE CALLED FIRST. There envs is loaded
 from db.hooks.allowed_chats import get_allowed_chats
 from db.hooks.message import insert_message
 from routers.donate import donate_router
@@ -19,7 +17,7 @@ from routers.food.router import food_router, photo_handler as food_photo_handler
 from routers.help import help_router
 from routers.instructions import instructions_router
 from routers.start import start_router
-from utils import filter_only_allowed_chats
+from utils import filter_only_allowed_chats, get_bot
 
 dp = Dispatcher()
 dp.include_routers(start_router,
@@ -54,13 +52,15 @@ async def cancel_command(message: Message, state: FSMContext) -> None:
 
 
 async def main() -> None:
+    with open('./data/nazhor_adjectives.txt', 'r', encoding='utf-8') as f:
+        nazhor_adjectives.extend(f.read().split(', '))
+
     # Initialize Bot instance with default bot properties which will be passed to all API calls
     docs = await get_allowed_chats()
     ALLOWED_CHATS.update(docs)
 
     print("Allowed chats is", ALLOWED_CHATS)
-    print('fart_directory', fart_directory)
-    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    bot = get_bot()
     await bot.delete_webhook()
 
     # And the run events dispatching
