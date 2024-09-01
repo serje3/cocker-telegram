@@ -1,6 +1,7 @@
+import asyncio
 import multiprocessing
 from concurrent import futures
-from typing import Generator
+from typing import Generator, AsyncIterator
 
 import grpc
 
@@ -12,30 +13,37 @@ logger = create_logger(__name__)
 
 
 # Пример функции создания аудио
-def generate_audio_from_text(text) -> Generator[bytes, None, None]:
+async def generate_audio_from_text(text) -> AsyncIterator[bytes]:
     encoder = FartEncoder()
-    return encoder.encode_to_bytes(text)
+    # return await encoder.encode_to_bytes(text)
+    yield encoder.aencode_to_bytes(text)
 
 
 class AudioService(pb2_grpc.AudioServiceServicer):
-    def GenerateFartAudio(self, request, context):
+    async def GenerateFartAudio(self, request, context):
         text = request.text
 
-        for chunk in generate_audio_from_text(text):
+        async for chunk in generate_audio_from_text(text):
             logger.info("Returning chunk: %s", f"{len(chunk) / 1024 / 1024}")
             yield pb2.AudioResponse(audio_chunk=chunk)
 
 
-def serve():
-    # Используем ProcessPoolExecutor вместо ThreadPoolExecutor для параллельной обработки
+async def serve():
     print('worker count', multiprocessing.cpu_count())
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     pb2_grpc.add_AudioServiceServicer_to_server(AudioService(), server)
     server.add_insecure_port('[::]:50051')
-    server.start()
-    server.wait_for_termination()
+    await server.start()
+    print("Server started")
+    try:
+        await server.wait_for_termination()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        print("Shutting down")
+        await server.stop(None)
 
 
 if __name__ == '__main__':
     logger.info("Starting server")
-    serve()
+    asyncio.run(serve())

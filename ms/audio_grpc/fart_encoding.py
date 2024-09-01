@@ -1,9 +1,13 @@
 import abc
+import asyncio
 import io
+import os
 import re
 import time
-from typing import Tuple, List, Generator, Any
+from asyncio import subprocess
+from typing import Tuple, List, Generator, Any, AsyncIterator
 
+from aiofiles import tempfile
 from pydub import AudioSegment, effects
 
 from config import fart_directory
@@ -87,9 +91,47 @@ class FartEncoder(AudioEncoder):
         logger.info('preprocessed %s', ''.join(char_list))
         return [fart_alphabet[char] for char in char_list]
 
+    async def concatenate_audios_ffmpeg(self, temp_file_name: str) -> bytes:
+        command = [
+            'ffmpeg',
+            '-f', 'concat',
+            '-safe', '0',  # Позволяет использовать абсолютные пути
+            '-i', temp_file_name,
+            '-f', 'mp3',  # Указываем формат на выходе
+            '-'
+        ]
+        process = await subprocess.create_subprocess_exec(*command, stdout=asyncio.subprocess.PIPE,
+                                                          stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            raise RuntimeError(f"ffmpeg error: {stderr.decode()}")
+
+        return stdout
+
+    async def encode_through_ffmpeg(self, input_str) -> bytes:
+        encoded_text_nums = self._alphabet_values(input_str)
+        file_pathes = list(map(lambda num: fart_directory / f"{num}.mp3", encoded_text_nums))
+
+        async with tempfile.NamedTemporaryFile(delete=False, mode='w', newline='', suffix='.txt') as temp_file:
+            temp_filename = temp_file.name
+            for file in file_pathes:
+                await temp_file.write(f"file '{file}'\n")
+
+        audio_bytes = b''
+
+        try:
+            audio_bytes = await self.concatenate_audios_ffmpeg(temp_filename)
+        except Exception as e:
+            logger.error(e)
+        finally:
+            os.remove(temp_filename)
+
+        return audio_bytes
+
     def encode(self, input_str: str) -> AudioSegment:
         encoded_text_nums = self._alphabet_values(input_str)
-        result_audio_segment: AudioSegment | None = None
+        result_audio_segment: AudioSegment = AudioSegment.empty()
         for num in encoded_text_nums:
             if not result_audio_segment:
                 result_audio_segment = self.__FART_AUDIO_SEGMENTS[num - 1]
@@ -119,6 +161,19 @@ class FartEncoder(AudioEncoder):
             encoded_audio_segment.export(audio_buffered_file, format="mp3")
 
             audio_bytes: bytes = audio_buffered_file.read()
+
+        logger.info("Size of this audio %s", f"{(len(audio_bytes) / 1024) / 1024} mb")
+
+        for chunk_start in range(0, len(audio_bytes), chunk_size):
+            yield audio_bytes[chunk_start: chunk_start + chunk_size]
+
+    async def aencode_to_bytes(self, input_str: str, chunk_size=49 * 1024 * 1024) -> AsyncIterator[bytes]:
+        start_time = time.time()
+        audio_bytes: bytes = await self.encode_through_ffmpeg(input_str)
+        if not audio_bytes or len(audio_bytes) == 0:
+            return
+
+        logger.info("Audio segment created with %s seconds", f"{time.time() - start_time}")
 
         logger.info("Size of this audio %s", f"{(len(audio_bytes) / 1024) / 1024} mb")
 
