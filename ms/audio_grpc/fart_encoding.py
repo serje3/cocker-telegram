@@ -2,7 +2,7 @@ import abc
 import io
 import re
 import time
-from typing import Tuple, List, Generator
+from typing import Tuple, List, Generator, Any
 
 from pydub import AudioSegment, effects
 
@@ -62,7 +62,7 @@ fart_alphabet = {
 
 class AudioEncoder(abc.ABC):
     @abc.abstractmethod
-    def encode[T](self, input_obj: T) -> AudioSegment:
+    def encode(self, input_obj: Any) -> AudioSegment:
         pass
 
 
