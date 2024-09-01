@@ -22,7 +22,7 @@ class AudioService(pb2_grpc.AudioServiceServicer):
         text = request.text
 
         for chunk in generate_audio_from_text(text):
-            logger.info("Returning chunk: %s", f"{len(chunk)}")
+            logger.info("Returning chunk: %s", f"{len(chunk) / 1024 / 1024}")
             yield pb2.AudioResponse(audio_chunk=chunk)
 
 
