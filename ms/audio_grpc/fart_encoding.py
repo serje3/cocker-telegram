@@ -1,6 +1,7 @@
 import abc
 import asyncio
 import io
+import logging
 import os
 import re
 import time
@@ -14,7 +15,7 @@ from config import fart_directory
 from utils import create_logger
 
 logger = create_logger(__name__)
-
+logger2 = logging.getLogger(__name__)
 fart_alphabet = {
     'а': 1,
     'б': 2,
@@ -109,7 +110,8 @@ class FartEncoder(AudioEncoder):
 
         return stdout
 
-    async def encode_through_ffmpeg(self, input_str) -> bytes:
+    async def encode_through_ffmpeg(self, input_str: str) -> bytes:
+        logger.info("starting encoding")
         encoded_text_nums = self._alphabet_values(input_str)
         file_pathes = list(map(lambda num: fart_directory / f"{num}.mp3", encoded_text_nums))
         logger.info("Starting ffmpeg process with %s symbols", len(encoded_text_nums))
@@ -127,8 +129,9 @@ class FartEncoder(AudioEncoder):
             logger.error(e)
         finally:
             os.remove(temp_filename)
+            logger.info("removed temp file with name %s", temp_filename)
 
-        logger.info("encoded audio", len(audio_bytes) != 0)
+        logger.info("encoded audio %d", len(audio_bytes) != 0)
 
         return audio_bytes
 
@@ -171,6 +174,7 @@ class FartEncoder(AudioEncoder):
             yield audio_bytes[chunk_start: chunk_start + chunk_size]
 
     async def aencode_to_bytes(self, input_str: str, chunk_size=49 * 1024 * 1024) -> AsyncIterator[bytes]:
+
         start_time = time.time()
         audio_bytes: bytes = await self.encode_through_ffmpeg(input_str)
         if not audio_bytes or len(audio_bytes) == 0:

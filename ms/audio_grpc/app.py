@@ -1,7 +1,7 @@
 import asyncio
 import multiprocessing
 from concurrent import futures
-from typing import Generator, AsyncIterator
+from typing import AsyncIterator
 
 import grpc
 
@@ -13,10 +13,11 @@ logger = create_logger(__name__)
 
 
 # Пример функции создания аудио
-async def generate_audio_from_text(text) -> AsyncIterator[bytes]:
+def generate_audio_from_text(text) -> AsyncIterator[bytes]:
     encoder = FartEncoder()
     # return await encoder.encode_to_bytes(text)
-    yield encoder.aencode_to_bytes(text)
+    logger.info("Start generating audio from text")
+    return encoder.aencode_to_bytes(text)
 
 
 class AudioService(pb2_grpc.AudioServiceServicer):
