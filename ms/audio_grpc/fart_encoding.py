@@ -112,12 +112,13 @@ class FartEncoder(AudioEncoder):
     async def encode_through_ffmpeg(self, input_str) -> bytes:
         encoded_text_nums = self._alphabet_values(input_str)
         file_pathes = list(map(lambda num: fart_directory / f"{num}.mp3", encoded_text_nums))
+        logger.info("Starting ffmpeg process with %s symbols", len(encoded_text_nums))
 
         async with tempfile.NamedTemporaryFile(delete=False, mode='w', newline='', suffix='.txt') as temp_file:
             temp_filename = temp_file.name
             for file in file_pathes:
                 await temp_file.write(f"file '{file}'\n")
-
+        logger.info("created temp file with name %s", temp_filename)
         audio_bytes = b''
 
         try:
@@ -126,6 +127,8 @@ class FartEncoder(AudioEncoder):
             logger.error(e)
         finally:
             os.remove(temp_filename)
+
+        logger.info("encoded audio", len(audio_bytes) != 0)
 
         return audio_bytes
 
