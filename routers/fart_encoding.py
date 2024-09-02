@@ -3,12 +3,13 @@ from typing import Generator
 import aiogram
 import grpc
 from aiogram import Router
-from aiogram.types import MessageReactionUpdated, BufferedInputFile
+from aiogram.types import MessageReactionUpdated, BufferedInputFile, Message
 
-from db.hooks.message import retrieve_message
+from db.hooks.message import retrieve_message, insert_message
 from ms.audio_grpc.proto import audio_service_pb2 as pb2
 from ms.audio_grpc.proto import audio_service_pb2_grpc as pb2_grpc
 from utils import filter_by_trigger_emoji, filter_only_allowed_chats
+from routers.food.router import photo_handler as food_photo_handler
 
 fart_router = Router(name=__name__)
 
@@ -49,3 +50,10 @@ async def message_reaction(updated: MessageReactionUpdated):
     print('длина текста', len(text))
 
     await fart_encoding(text, chat_id, updated.bot, reply_to_message_id=updated.message_id)
+
+
+@fart_router.message(filter_only_allowed_chats)
+async def on_message(message: Message):
+    await insert_message(message)
+    if message.photo is not None and len(message.photo) != 0:
+        await food_photo_handler(message)
