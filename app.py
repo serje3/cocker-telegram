@@ -28,7 +28,7 @@ dp.include_routers(start_router,
                    fart_router)
 
 
-@dp.message(filter_only_allowed_chats)
+@dp.message(filter_only_allowed_chats, not Command)
 async def on_message(message: Message):
     await insert_message(message)
     if message.photo is not None and len(message.photo) != 0:
