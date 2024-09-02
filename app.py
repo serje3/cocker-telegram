@@ -20,6 +20,7 @@ from routers.start import start_router
 from utils import filter_only_allowed_chats, get_bot
 
 dp = Dispatcher()
+dp.message_handlers.once = False
 dp.include_routers(start_router,
                    help_router,
                    donate_router,
@@ -28,7 +29,7 @@ dp.include_routers(start_router,
                    fart_router)
 
 
-@dp.message(filter_only_allowed_chats, not Command)
+@dp.message(filter_only_allowed_chats)
 async def on_message(message: Message):
     await insert_message(message)
     if message.photo is not None and len(message.photo) != 0:
