@@ -14,7 +14,7 @@ words_router = Router(name=__name__)
 filter_by_trigger_emoji_reaction = filter_by_trigger_emoji("💅")
 
 
-@words_router.message_reaction(F.chat.id.in_([-1002070268098], filter_by_trigger_emoji_reaction))
+@words_router.message_reaction(F.chat.id.in_([-1002070268098]), filter_by_trigger_emoji_reaction)
 async def words_erection(updated: MessageReactionUpdated):
     message: MessageMongo = await retrieve_message(updated.chat.id, updated.message_id)
     if message is None or message.get('message_text', None) is None:
