@@ -13,8 +13,8 @@ from config import ALLOWED_CHATS
 
 
 async def fetch(url, headers=None, data=None, method="POST"):
-    if data is not None:
-        data = json.dumps(data)
+    # if data is not None:
+    #     data = json.dumps(data)
 
     print("INTERNAL REQUEST:", method, url, data)
 
