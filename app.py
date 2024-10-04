@@ -16,6 +16,7 @@ from routers.food.router import food_router
 from routers.help import help_router
 from routers.instructions import instructions_router
 from routers.start import start_router
+from routers.words import words_router
 from utils import get_bot
 
 dp = Dispatcher()
@@ -24,7 +25,8 @@ dp.include_routers(start_router,
                    donate_router,
                    food_router,
                    instructions_router,
-                   fart_router)
+                   fart_router,
+                   words_router)
 
 
 @dp.message(Command("cancel"))
