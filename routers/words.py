@@ -21,6 +21,8 @@ async def words_erection(updated: MessageReactionUpdated):
         print("WTF?? message does not exist for word reaction")
         return
     async with ChatActionSender.typing(bot=updated.bot, chat_id=updated.chat.id):
-        response = await fetch(f"{base_food_api_url}/predict/words", data={"content": message['message_text']})
+        response = await fetch(f"{base_food_api_url}/predict/words",
+                               headers={'Content-Type': 'application/json'},
+                               data={"content": message['message_text']})
         print(response)
         await updated.bot.send_message(updated.chat.id, response['content'])

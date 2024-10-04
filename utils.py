@@ -21,7 +21,7 @@ async def fetch(url, headers=None, data=None, method="POST"):
     async with aiohttp.ClientSession() as session:
         try:
             async with session.request(
-                    method=method, url=url, data=data, headers=headers
+                    method=method, url=url, json=data, headers=headers
             ) as resp:
                 return await resp.json()
         except Exception as e:
