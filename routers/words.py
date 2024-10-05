@@ -25,4 +25,12 @@ async def words_erection(updated: MessageReactionUpdated):
                                headers={'Content-Type': 'application/json'},
                                data={"content": message['message_text']})
         print(response)
-        await updated.bot.send_message(updated.chat.id, response['content'])
+        try:
+            content = response['content']
+        except KeyError:
+            print('Чето пошло не так')
+            await updated.bot.send_message(updated.chat.id, 'иди нахуй💅')
+            return
+        words = content.split(' ')
+        text = ' '.join(words[:-2])
+        await updated.bot.send_message(updated.chat.id, text, reply_to_message_id=updated.message_id)
