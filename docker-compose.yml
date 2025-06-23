@@ -20,7 +20,7 @@ services:
     environment:
       PYTHONPATH: "/app"
   mongo:
-    image: mongo:8.0
+    image: mongo:6.0
     container_name: mongo
     volumes:
       - ./mongo-data:/data/db
