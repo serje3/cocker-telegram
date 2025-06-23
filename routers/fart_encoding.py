@@ -1,3 +1,4 @@
+import os
 from typing import Generator
 
 import aiogram
@@ -15,7 +16,7 @@ fart_router = Router(name=__name__)
 
 
 class AudioGRPCClient:
-    SERVER_ADDRESS = 'localhost:50051'
+    SERVER_ADDRESS = os.getenv('AUDIO_GRPC_SERVER')
 
     async def generate_audio(self, text) -> Generator[bytes, None, None]:
         async with grpc.aio.insecure_channel(self.SERVER_ADDRESS, options=[

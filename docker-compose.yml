@@ -1,0 +1,34 @@
+name: cocker-tg
+services:
+  telegram:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    volumes:
+      - ./:/app
+    command: "python entrypoint.py cocker"
+    depends_on:
+      - mongo
+      - audio
+  audio:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    volumes:
+      - ./:/app
+    command: "python entrypoint.py audio"
+    environment:
+      PYTHONPATH: "/app"
+  mongo:
+    image: mongo:8.0
+    container_name: mongo
+    volumes:
+      - ./mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: telegram
+  is-food-ai:
+    image: serje3/is-food-ai
+    container_name: is-food-ai
+    env_file:
+      - docker/is-food-ai/.env
+    command: "uvicorn main:app --host 0.0.0.0 --port 8841"

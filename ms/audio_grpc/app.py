@@ -30,18 +30,18 @@ class AudioService(pb2_grpc.AudioServiceServicer):
 
 
 async def serve():
-    print('worker count', multiprocessing.cpu_count())
+    logger.info('worker count ' + str(multiprocessing.cpu_count()))
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     pb2_grpc.add_AudioServiceServicer_to_server(AudioService(), server)
     server.add_insecure_port('[::]:50051')
     await server.start()
-    print("Server started")
+    logger.info("Server started")
     try:
         await server.wait_for_termination()
     except KeyboardInterrupt:
         pass
     finally:
-        print("Shutting down")
+        logger.info("Shutting down")
         await server.stop(None)
 
 

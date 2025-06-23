@@ -12,6 +12,7 @@ from aiofiles import tempfile
 from pydub import AudioSegment, effects
 
 from config import fart_directory
+from ms.audio_grpc.base import AudioEncoder
 from utils import create_logger
 
 logger = create_logger(__name__)
@@ -65,10 +66,7 @@ fart_alphabet = {
 }
 
 
-class AudioEncoder(abc.ABC):
-    @abc.abstractmethod
-    def encode(self, input_obj: Any) -> AudioSegment:
-        pass
+
 
 
 class FartEncoder(AudioEncoder):
@@ -110,6 +108,26 @@ class FartEncoder(AudioEncoder):
 
         return stdout
 
+
+    def encode(self, input_str: str) -> AudioSegment:
+        encoded_text_nums = self._alphabet_values(input_str)
+        result_audio_segment: AudioSegment = AudioSegment.empty()
+        for num in encoded_text_nums:
+            if not result_audio_segment:
+                result_audio_segment = self.__FART_AUDIO_SEGMENTS[num - 1]
+                continue
+            result_audio_segment += self.__FART_AUDIO_SEGMENTS[num - 1]
+
+        print(result_audio_segment)
+
+        if not result_audio_segment:
+            print('not enough audio segments')
+            return None
+
+        normalized_audio_segment = effects.normalize(result_audio_segment)
+
+        return normalized_audio_segment
+
     async def encode_through_ffmpeg(self, input_str: str) -> bytes:
         logger.info("starting encoding")
         encoded_text_nums = self._alphabet_values(input_str)
@@ -134,25 +152,6 @@ class FartEncoder(AudioEncoder):
         logger.info("encoded audio %d", len(audio_bytes) != 0)
 
         return audio_bytes
-
-    def encode(self, input_str: str) -> AudioSegment:
-        encoded_text_nums = self._alphabet_values(input_str)
-        result_audio_segment: AudioSegment = AudioSegment.empty()
-        for num in encoded_text_nums:
-            if not result_audio_segment:
-                result_audio_segment = self.__FART_AUDIO_SEGMENTS[num - 1]
-                continue
-            result_audio_segment += self.__FART_AUDIO_SEGMENTS[num - 1]
-
-        print(result_audio_segment)
-
-        if not result_audio_segment:
-            print('not enough audio segments')
-            return None
-
-        normalized_audio_segment = effects.normalize(result_audio_segment)
-
-        return normalized_audio_segment
 
     def encode_to_bytes(self, input_str: str, chunk_size=49 * 1024 * 1024) -> Generator[bytes, None, None]:
         start_time = time.time()
