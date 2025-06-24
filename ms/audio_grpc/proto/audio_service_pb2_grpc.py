@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from ms.audio_grpc.proto import audio_service_pb2 as ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2
+from ms.audio_grpc.proto import audio_service_pb2 as audio__service__pb2
 
 GRPC_GENERATED_VERSION = '1.66.1'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in ms/audio_grpc/proto/audio_service_pb2_grpc.py depends on'
+        + f' but the generated code in audio_service_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,13 @@ class AudioServiceStub(object):
         """
         self.GenerateFartAudio = channel.unary_stream(
                 '/audiogen.AudioService/GenerateFartAudio',
-                request_serializer=ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.TextInputRequest.SerializeToString,
-                response_deserializer=ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.AudioResponse.FromString,
+                request_serializer=audio__service__pb2.TextInputRequest.SerializeToString,
+                response_deserializer=audio__service__pb2.AudioResponse.FromString,
+                _registered_method=True)
+        self.GenerateEAudio = channel.unary_stream(
+                '/audiogen.AudioService/GenerateEAudio',
+                request_serializer=audio__service__pb2.TextInputRequest.SerializeToString,
+                response_deserializer=audio__service__pb2.AudioResponse.FromString,
                 _registered_method=True)
 
 
@@ -50,13 +55,24 @@ class AudioServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GenerateEAudio(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AudioServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GenerateFartAudio': grpc.unary_stream_rpc_method_handler(
                     servicer.GenerateFartAudio,
-                    request_deserializer=ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.TextInputRequest.FromString,
-                    response_serializer=ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.AudioResponse.SerializeToString,
+                    request_deserializer=audio__service__pb2.TextInputRequest.FromString,
+                    response_serializer=audio__service__pb2.AudioResponse.SerializeToString,
+            ),
+            'GenerateEAudio': grpc.unary_stream_rpc_method_handler(
+                    servicer.GenerateEAudio,
+                    request_deserializer=audio__service__pb2.TextInputRequest.FromString,
+                    response_serializer=audio__service__pb2.AudioResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +100,35 @@ class AudioService(object):
             request,
             target,
             '/audiogen.AudioService/GenerateFartAudio',
-            ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.TextInputRequest.SerializeToString,
-            ms_dot_audio__grpc_dot_proto_dot_audio__service__pb2.AudioResponse.FromString,
+            audio__service__pb2.TextInputRequest.SerializeToString,
+            audio__service__pb2.AudioResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GenerateEAudio(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/audiogen.AudioService/GenerateEAudio',
+            audio__service__pb2.TextInputRequest.SerializeToString,
+            audio__service__pb2.AudioResponse.FromString,
             options,
             channel_credentials,
             insecure,

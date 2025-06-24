@@ -4,6 +4,7 @@ package audiogen;
 
 service AudioService {
   rpc GenerateFartAudio (TextInputRequest) returns (stream AudioResponse);
+  rpc GenerateEAudio (TextInputRequest) returns (stream AudioResponse);
 }
 
 message TextInputRequest {

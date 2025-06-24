@@ -13,6 +13,7 @@ nazhor_adjectives = []  # lazy loading from file
 
 base_food_api_url = os.getenv("FOOD_AI_API")
 fart_directory = BASE_PATH / 'data/farts/'
+e_sound = BASE_PATH / 'data/e.mp3'
 
 reload_reaction = "🍌"
 ALLOWED_CHATS = set()  # lazy loading from db

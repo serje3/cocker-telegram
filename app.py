@@ -11,6 +11,7 @@ from aiogram.types import Message
 from config import ALLOWED_CHATS, nazhor_adjectives  # MUST BE CALLED FIRST. There envs is loaded
 from db.hooks.allowed_chats import get_allowed_chats
 from routers.donate import donate_router
+from routers.e_encoding import e_router
 from routers.fart_encoding import fart_router
 from routers.food.router import food_router
 from routers.help import help_router
@@ -26,6 +27,7 @@ dp.include_routers(start_router,
                    food_router,
                    instructions_router,
                    fart_router,
+                   e_router,
                    words_router)
 
 

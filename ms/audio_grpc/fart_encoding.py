@@ -1,22 +1,16 @@
-import abc
-import asyncio
-import io
-import logging
 import os
 import re
-import time
-from asyncio import subprocess
-from typing import Tuple, List, Generator, Any, AsyncIterator
+from typing import List
 
 from aiofiles import tempfile
-from pydub import AudioSegment, effects
 
 from config import fart_directory
 from ms.audio_grpc.base import AudioEncoder
 from utils import create_logger
+from ms.audio_grpc.utils_ffmpeg import concatenate_audios_ffmpeg
 
 logger = create_logger(__name__)
-logger2 = logging.getLogger(__name__)
+
 fart_alphabet = {
     'а': 1,
     'б': 2,
@@ -66,14 +60,7 @@ fart_alphabet = {
 }
 
 
-
-
-
 class FartEncoder(AudioEncoder):
-    __FART_AUDIO_SEGMENTS: Tuple = tuple(AudioSegment.from_mp3(fart_directory / f'{i}.mp3') for i in range(1, 45))
-
-    def __init__(self):
-        self.audio = AudioSegment.empty()
 
     # Функция предобработки строки
     def _preprocess_string(self, input_string):
@@ -90,45 +77,7 @@ class FartEncoder(AudioEncoder):
         logger.info('preprocessed %s', ''.join(char_list))
         return [fart_alphabet[char] for char in char_list]
 
-    async def concatenate_audios_ffmpeg(self, temp_file_name: str) -> bytes:
-        command = [
-            'ffmpeg',
-            '-f', 'concat',
-            '-safe', '0',  # Позволяет использовать абсолютные пути
-            '-i', temp_file_name,
-            '-f', 'mp3',  # Указываем формат на выходе
-            '-'
-        ]
-        process = await subprocess.create_subprocess_exec(*command, stdout=asyncio.subprocess.PIPE,
-                                                          stderr=asyncio.subprocess.PIPE)
-        stdout, stderr = await process.communicate()
-
-        if process.returncode != 0:
-            raise RuntimeError(f"ffmpeg error: {stderr.decode()}")
-
-        return stdout
-
-
-    def encode(self, input_str: str) -> AudioSegment:
-        encoded_text_nums = self._alphabet_values(input_str)
-        result_audio_segment: AudioSegment = AudioSegment.empty()
-        for num in encoded_text_nums:
-            if not result_audio_segment:
-                result_audio_segment = self.__FART_AUDIO_SEGMENTS[num - 1]
-                continue
-            result_audio_segment += self.__FART_AUDIO_SEGMENTS[num - 1]
-
-        print(result_audio_segment)
-
-        if not result_audio_segment:
-            print('not enough audio segments')
-            return None
-
-        normalized_audio_segment = effects.normalize(result_audio_segment)
-
-        return normalized_audio_segment
-
-    async def encode_through_ffmpeg(self, input_str: str) -> bytes:
+    async def encode(self, input_str: str) -> bytes:
         logger.info("starting encoding")
         encoded_text_nums = self._alphabet_values(input_str)
         file_pathes = list(map(lambda num: fart_directory / f"{num}.mp3", encoded_text_nums))
@@ -142,7 +91,7 @@ class FartEncoder(AudioEncoder):
         audio_bytes = b''
 
         try:
-            audio_bytes = await self.concatenate_audios_ffmpeg(temp_filename)
+            audio_bytes = await concatenate_audios_ffmpeg(temp_filename)
         except Exception as e:
             logger.error(e)
         finally:
@@ -152,36 +101,3 @@ class FartEncoder(AudioEncoder):
         logger.info("encoded audio %d", len(audio_bytes) != 0)
 
         return audio_bytes
-
-    def encode_to_bytes(self, input_str: str, chunk_size=49 * 1024 * 1024) -> Generator[bytes, None, None]:
-        start_time = time.time()
-        encoded_audio_segment: AudioSegment = self.encode(input_str)
-
-        if not encoded_audio_segment:
-            return
-
-        logger.info("Audio segment created with %s seconds", f"{time.time() - start_time}")
-
-        with io.BytesIO() as audio_buffered_file:
-            encoded_audio_segment.export(audio_buffered_file, format="mp3")
-
-            audio_bytes: bytes = audio_buffered_file.read()
-
-        logger.info("Size of this audio %s", f"{(len(audio_bytes) / 1024) / 1024} mb")
-
-        for chunk_start in range(0, len(audio_bytes), chunk_size):
-            yield audio_bytes[chunk_start: chunk_start + chunk_size]
-
-    async def aencode_to_bytes(self, input_str: str, chunk_size=49 * 1024 * 1024) -> AsyncIterator[bytes]:
-
-        start_time = time.time()
-        audio_bytes: bytes = await self.encode_through_ffmpeg(input_str)
-        if not audio_bytes or len(audio_bytes) == 0:
-            return
-
-        logger.info("Audio segment created with %s seconds", f"{time.time() - start_time}")
-
-        logger.info("Size of this audio %s", f"{(len(audio_bytes) / 1024) / 1024} mb")
-
-        for chunk_start in range(0, len(audio_bytes), chunk_size):
-            yield audio_bytes[chunk_start: chunk_start + chunk_size]

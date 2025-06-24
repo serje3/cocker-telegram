@@ -6,33 +6,18 @@ from typing import AsyncIterator
 import grpc
 
 from fart_encoding import FartEncoder
-from proto import audio_service_pb2 as pb2, audio_service_pb2_grpc as pb2_grpc
+from ms.audio_grpc.audio_service import AudioService
+from ms.audio_grpc.proto.audio_service_pb2_grpc import add_AudioServiceServicer_to_server
 from utils import create_logger
 
 logger = create_logger(__name__)
 
 
-# Пример функции создания аудио
-def generate_audio_from_text(text) -> AsyncIterator[bytes]:
-    encoder = FartEncoder()
-    # return await encoder.encode_to_bytes(text)
-    logger.info("Start generating audio from text")
-    return encoder.aencode_to_bytes(text)
-
-
-class AudioService(pb2_grpc.AudioServiceServicer):
-    async def GenerateFartAudio(self, request, context):
-        text = request.text
-
-        async for chunk in generate_audio_from_text(text):
-            logger.info("Returning chunk: %s", f"{len(chunk) / 1024 / 1024}")
-            yield pb2.AudioResponse(audio_chunk=chunk)
-
 
 async def serve():
     logger.info('worker count ' + str(multiprocessing.cpu_count()))
     server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
-    pb2_grpc.add_AudioServiceServicer_to_server(AudioService(), server)
+    add_AudioServiceServicer_to_server(AudioService(), server)
     server.add_insecure_port('[::]:50051')
     await server.start()
     logger.info("Server started")
