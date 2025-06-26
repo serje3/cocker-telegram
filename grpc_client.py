@@ -18,7 +18,7 @@ class GRPCClient(abc.ABC):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.channel.close()
+        await self.channel.close()
         self.channel = None
 
 
