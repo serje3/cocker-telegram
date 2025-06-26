@@ -23,7 +23,7 @@ services:
     image: mongo:6.0
     container_name: mongo
     volumes:
-      - ./mongo-data:/data/db
+      - mongo_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: telegram
   is-food-ai:
@@ -32,3 +32,6 @@ services:
     env_file:
       - docker/is-food-ai/.env
     command: "uvicorn main:app --host 0.0.0.0 --port 8841 --workers 2"
+
+volumes:
+  mongo_data:
