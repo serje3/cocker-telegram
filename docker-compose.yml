@@ -7,9 +7,11 @@ services:
     volumes:
       - ./:/app
     command: "python entrypoint.py cocker"
+    restart: always
     depends_on:
       - mongo
       - audio
+      - is-food-ai
   audio:
     build:
       context: .
